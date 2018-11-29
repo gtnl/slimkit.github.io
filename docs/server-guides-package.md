@@ -13,7 +13,7 @@ title: 拓展包开发指南
 php artisan package:create
 ```
 
-执行命令，按照提示输入你的信息，你的包就创建好了，而你的包会被储存在 `resource/repositorie/sources` 中。
+执行命令，按照提示输入你的信息，你的包就创建好了，而你的包会被储存在 `packages` 中。
 
 ## 本地模拟打包
 
@@ -113,3 +113,155 @@ public function boot()
 
 第三个是拓展参数，如果你二个参数是本地 route name，那么一定要存在 `route => true`, 否则会当成 http 地址处理，`icon` 字段则是图标地址，或者是图标字符串。
 
+##一些注意点
+
+目前的TS+扩展包的指令是不完全的，至少我通过文档没有做成功过。这是我在乔大侠指导下的创建过程，供大家参考：
+
+目标：创建 gtnl/photo的扩展包，可以直接使用TS+后台。
+
+过程：
+
+1. 在TS+的根目录下运行“php artisan package:create”，产生基础的扩展包。
+
+$ php artisan package:create
+
+ Package name (/):
+
+ > gtnl/photo
+
+ Autoload namespace, default [Gtnl\Photo\]:
+
+ > 
+
+ 34/34 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100%
+
+Create Package to: [/usr/local/htdocs/mylara/ts-plus/resources/repositorie/sources/gtnl-photo] success.
+
+2. 本地模拟打包，运行指令“$ php artisan package:archive gtnl/photo”。按我的想象，这下是不是就可以使用“http://localhost/photo”来访问新的组件了，答案是不可以的。
+
+/routes/web.php
+
+Route::group(['prefix' => 'photo'], function (RouteRegisterContract $route) {
+
+    // Home Router.
+
+    $route->get('/', Web\HomeController::class.'@index');
+
+});
+
+3. 创建“软链”，运行命令“php artisan package:link ”。其实运行完也是打不开页面的。
+
+4. 修改TS+根目录下的composer.json, 找到json对象中的「repositories」属性,在此数组的任意位置加入photo包的元素
+
+{
+
+"type":"path",
+
+"url":"resources/repositorie/sources/gtnl-photo",
+
+"options": {
+
+"symlink":true,
+
+"plus-soft":true
+
+    }
+
+},
+
+
+
+
+5. 在这个文件的下面，添加：
+
+
+
+
+6. 在photo包的composer.json下面，加上版本号：
+
+
+
+
+7. 删除TS+根目录下的vendor目录和composer.lock，然后运行 composer install （这一步很重要）；
+
+$ composer install
+
+Loading composer repositories with package information
+
+Updating dependencies (including require-dev)
+
+Package operations: 1 install, 0 updates, 0 removals
+
+  - Installinggtnl/photo (0.0.1): Symlinking from resources/repositorie/sources/gtnl-photo
+
+Writing lock file
+
+Generating optimized autoload files
+
+> Illuminate\Foundation\ComposerScripts::postAutoloadDump
+
+> @php artisan package:discover
+
+Discovered Package: slimkit/plus-appversion
+
+Discovered Package: slimkit/plus-around-amap
+
+Discovered Package: slimkit/plus-checkin
+
+Discovered Package: slimkit/plus-feed
+
+Discovered Package: slimkit/plus-id
+
+Discovered Package: slimkit/plus-music
+
+Discovered Package: slimkit/plus-news
+
+Discovered Package: slimkit/plus-socialite
+
+Discovered Package: tymon/jwt-auth
+
+Discovered Package: zhiyicx/plus-group
+
+Discovered Package: zhiyicx/plus-question
+
+Discovered Package: zhiyicx/plus-component-pc
+
+Discovered Package: fideloper/proxy
+
+Discovered Package: intervention/image
+
+Discovered Package: laravel/tinker
+
+Discovered Package: nunomaduro/collision
+
+Discovered Package: gtnl/photo
+
+Package manifest generated successfully.
+
+8. 运行 “php artisan package:handle photo"，
+
+$ php artisan package:handle photo
+
+  - photo publish-asstes
+
+  - photo publish-config
+
+  - photo publish
+
+  - photo migrate
+
+  - photo db-seed
+
+9. 运行”php artisan package:handle photo publish-asstes“，将资源拷贝到，
+
+$ php artisan package:handle photo publish-asstes
+
+ Overwrite any existing files (yes/no) [no]:
+
+ > yes
+
+Copied Directory [/resources/repositorie/sources/gtnl-photo/assets] To [/public/assets/photo]
+
+Publishing complete.
+
+10. 这时候访问”http://localhost/photo“,界面出现了。必要时运行‘php artisan route:clear’等清理缓存。
