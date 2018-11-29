@@ -13,7 +13,7 @@ title: 拓展包开发指南
 php artisan package:create
 ```
 
-执行命令，按照提示输入你的信息，你的包就创建好了，而你的包会被储存在 `resource/repositorie/sources` 中。
+执行命令，按照提示输入你的信息，你的包就创建好了，而你的包会被储存在 `packages` 中。
 
 ## 本地模拟打包
 
@@ -113,3 +113,6 @@ public function boot()
 
 第三个是拓展参数，如果你二个参数是本地 route name，那么一定要存在 `route => true`, 否则会当成 http 地址处理，`icon` 字段则是图标地址，或者是图标字符串。
 
+###一些注意点
+
+发现文档上面有些地方不能工作，这儿有一篇可以使用的帮助：https://www.jianshu.com/p/acb03ecd8b13。
